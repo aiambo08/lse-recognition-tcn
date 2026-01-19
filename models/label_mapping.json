@@ -1,0 +1,12 @@
+{
+  "AYUDA": 0,
+  "BANIO": 1,
+  "COMER": 2,
+  "GRACIAS": 3,
+  "HOLA": 4,
+  "NO": 5,
+  "POR_FAVOR": 6,
+  "SI": 7,
+  "TU": 8,
+  "YO": 9
+}
