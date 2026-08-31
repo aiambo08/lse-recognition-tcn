@@ -181,14 +181,34 @@ git clone https://github.com/aiambo08/lse-recognition-tcn.git
 cd lse-recognition-tcn
 ```
 
-### 2. Environment Setup
+### 2. Environment Setup & Installation
+
+#### Option A: Using `uv` (Recommended — 10x Faster)
+```bash
+# 1. Create virtual environment with Python 3.13 (or desired version)
+uv venv .venv --python 3.13
+
+# 2. Activate virtual environment
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# Linux / macOS:
+source .venv/bin/activate
+
+# 3. Install dependencies and package in editable mode
+uv pip install -r requirements.txt
+uv pip install -e .
+```
+
+*Tip: With `uv`, you can also run any command directly without activating:*
+```bash
+uv run pytest -v
+uv run python scripts/benchmark.py --model mstcn
+```
+
+#### Option B: Standard Python `venv`
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
-
-### 3. Install Dependencies & Package
-```bash
 pip install -r requirements.txt
 pip install -e .
 ```
