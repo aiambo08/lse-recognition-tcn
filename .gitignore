@@ -55,6 +55,8 @@ htmlcov/
 data/raw_videos/
 models/*.task
 models/*.pth
+models/*.onnx
+models/*.pt
 *.mov
 *.mp4
 

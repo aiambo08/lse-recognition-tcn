@@ -68,12 +68,12 @@ O mediante **Leave-One-Signer-Out Cross-Validation (LOSO-CV)**: se realizan $K$ 
   - Medición formal de número de parámetros, latencia (ms) en CPU y GPU, throughput (FPS) y consumo de memoria.
 
 ### Fase D: Despliegue de Producción y APIs
-- [ ] **Exportación Optimizada**:
-  - Conversión a **ONNX Runtime** y **TorchScript** para ejecución ultra-rápida en CPU/Edge devices.
-- [ ] **Servidor de Inferencia / API**:
-  - Endpoint **FastAPI** con soporte WebSocket / WebRTC para streaming de vídeo en tiempo real.
-- [ ] **Interfaz Web de Demostración**:
-  - Dashboard interactivo (Streamlit / Next.js) con visualización de esqueleto 3D, gráfico de barras de probabilidades en directo y transcripción continua.
+- [x] **Exportación Optimizada** (`src/lse_recognition/deployment/export.py`, `scripts/export_model.py`):
+  - Conversión a **ONNX Runtime** con ejes dinámicos y validación de paridad numérica, y exportación a **TorchScript** (`.pt`).
+- [x] **Servidor de Inferencia / API** (`src/lse_recognition/server/app.py`):
+  - Endpoint **FastAPI** REST (`/predict/sequence`, `/calibrate`, `/classes`, `/health`) y WebSocket (`/ws/stream`) para streaming en tiempo real a 60 FPS con ventana deslizante.
+- [x] **Interfaz Web de Demostración** (`src/lse_recognition/demo/app.py`):
+  - Dashboard interactivo multi-pestaña (Streamlit) con selección de modelo/backend, gráfico de barras de probabilidades calibradas en directo, métricas de latencia/FPS y síntesis de voz (TTS).
 
 ### Fase E: Redacción del Artículo Científico / Dossier Técnico
 - Estructura estándar IEEE / ACM:
