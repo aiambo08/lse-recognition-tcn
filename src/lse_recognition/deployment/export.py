@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 def export_to_onnx(
     model: nn.Module,
     output_path: str | Path,
-    seq_length: int = 40,
+    seq_length: int = 60,
     input_features: int = 126,
     batch_size: int = 1,
     dynamic_batch: bool = True,
-    opset_version: int = 14,
+    opset_version: int = 18,
     verify_parity: bool = True,
 ) -> Path:
     """
@@ -36,11 +36,11 @@ def export_to_onnx(
     Args:
         model: Modelo PyTorch entrenado.
         output_path: Ruta de salida del archivo .onnx.
-        seq_length: Longitud temporal de la secuencia (T=40).
+        seq_length: Longitud temporal de la secuencia (T=60).
         input_features: Dimensión de entrada por frame (D=126).
         batch_size: Tamaño de batch de ejemplo para el trazado.
-        dynamic_batch: Si es True, configura el eje 0 (batch) como dinámico.
-        opset_version: Versión de ONNX opset (default 14).
+        dynamic_batch: Si es True, configura el eje 0 (batch) y eje 1 (tiempo) como dinámicos.
+        opset_version: Versión de ONNX opset (default 18).
         verify_parity: Si es True, verifica con onnxruntime que las salidas coincidan.
 
     Returns:
@@ -55,7 +55,7 @@ def export_to_onnx(
     dynamic_axes = None
     if dynamic_batch:
         dynamic_axes = {
-            "input": {0: "batch_size"},
+            "input": {0: "batch_size", 1: "sequence_length"},
             "output": {0: "batch_size"},
         }
 
@@ -70,6 +70,7 @@ def export_to_onnx(
         input_names=["input"],
         output_names=["output"],
         dynamic_axes=dynamic_axes,
+        dynamo=False,
     )
 
     try:
@@ -104,7 +105,7 @@ def export_to_onnx(
 def export_to_torchscript(
     model: nn.Module,
     output_path: str | Path,
-    seq_length: int = 40,
+    seq_length: int = 60,
     input_features: int = 126,
     batch_size: int = 1,
 ) -> Path:

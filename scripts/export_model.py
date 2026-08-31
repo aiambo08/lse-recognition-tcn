@@ -71,7 +71,7 @@ def main():
         logger.info(f"Pesos cargados desde: {args.checkpoint}")
 
     out_path = Path(args.output)
-    seq_len = config.get("seq_length", 40)
+    seq_len = config.get("seq_length", 60)
     feat_dim = config.get("input_features", 126)
 
     if args.format in ("onnx", "both"):

@@ -91,6 +91,14 @@ class ONNXSignPredictor:
         if arr.ndim == 2:
             arr = np.expand_dims(arr, axis=0)  # (1, T, D)
 
+        # Ajuste temporal si el modelo ONNX tiene dimensión fija esperada
+        if len(self.input_shape) >= 2 and isinstance(self.input_shape[1], int) and self.input_shape[1] > 0:
+            expected_T = self.input_shape[1]
+            current_T = arr.shape[1]
+            if current_T != expected_T:
+                indices = np.linspace(0, current_T - 1, expected_T).astype(np.int32)
+                arr = arr[:, indices, :]
+
         t0 = time.perf_counter()
         raw_outputs = self.session.run(
             [self.output_name], {self.input_name: arr}

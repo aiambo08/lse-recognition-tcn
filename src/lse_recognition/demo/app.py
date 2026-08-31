@@ -162,7 +162,8 @@ with tab_demo:
                 break
         else:
             # Sintético
-            t = np.linspace(0, 2 * np.pi, 40)
+            seq_t = config.get("seq_length", 60)
+            t = np.linspace(0, 2 * np.pi, seq_t)
             selected_seq = np.sin(t[:, None] + np.linspace(0, np.pi, 126)[None, :]).astype(np.float32)
             true_label = "Sintético (Simulación)"
 
