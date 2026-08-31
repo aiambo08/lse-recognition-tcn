@@ -52,11 +52,11 @@ htmlcov/
 .nox/
 
 # Data & models (generados localmente, no versionar)
-# Comenta estas líneas si quieres versionar datos de ejemplo
-# data/raw_videos/
-# data/landmarks/
-# data/landmarks_hands_only/
-# models/*.pth
+data/raw_videos/
+models/*.task
+models/*.pth
+*.mov
+*.mp4
 
 # Logs
 *.log
