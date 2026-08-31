@@ -90,6 +90,26 @@ class LandmarksNormalizer:
         return lm.reshape(seq_len, -1)
 
 
+class ComposeTransforms:
+    """
+    Aplica una lista de transformaciones en secuencia sobre arrays de landmarks.
+
+    Ejemplo:
+        transform = ComposeTransforms([
+            LandmarksNormalizer(),
+            KinematicFeatureExtractor(include_velocity=True)
+        ])
+    """
+
+    def __init__(self, transforms: List):
+        self.transforms = [t for t in transforms if t is not None]
+
+    def __call__(self, x: np.ndarray) -> np.ndarray:
+        for t in self.transforms:
+            x = t(x)
+        return x
+
+
 class SignLanguageDataset(Dataset):
     """
     Dataset para secuencias de landmarks de LSE.

@@ -19,7 +19,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import cv2
-import mediapipe as mp
+try:
+    import mediapipe as mp
+    MEDIAPIPE_AVAILABLE = True
+except ImportError:
+    mp = None
+    MEDIAPIPE_AVAILABLE = False
+
 import numpy as np
 import torch
 
@@ -45,6 +51,11 @@ class RealtimeLandmarkExtractor:
 
     def __init__(self, config: Dict):
         self.config = config
+        if not MEDIAPIPE_AVAILABLE:
+            raise ImportError(
+                "MediaPipe no está instalado en este entorno Python. "
+                "Para inferencia en tiempo real instala: pip install mediapipe"
+            )
         mp_hands = mp.solutions.hands
         self.hands = mp_hands.Hands(
             static_image_mode=False,
