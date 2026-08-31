@@ -175,15 +175,21 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--models", nargs="+",
+        "--models", "--model", dest="models", nargs="+",
         default=["tcn", "mstcn", "lstm", "attention_lstm", "stgcn"],
-        help="Modelos a comparar"
+        help="Modelos a comparar ('all' o lista: tcn, mstcn, lstm, attention_lstm, stgcn)"
     )
     parser.add_argument("--epochs", type=int, default=15, help="Épocas por modelo")
     parser.add_argument("--batch-size", type=int, default=16, help="Tamaño de batch")
     parser.add_argument("--quick", action="store_true", help="Modo rápido de prueba (3 épocas)")
     parser.add_argument("--device", default=None, help="Dispositivo (cpu/cuda)")
+    parser.add_argument("--export-markdown", action="store_true", default=True, help="Exportar tabla en Markdown a docs/benchmark_summary.md")
+    parser.add_argument("--export-latex", action="store_true", default=True, help="Exportar tabla en LaTeX")
     args = parser.parse_args()
+
+    # Expandir 'all' si se especifica
+    if "all" in [m.lower() for m in args.models]:
+        args.models = ["tcn", "mstcn", "lstm", "attention_lstm", "stgcn"]
 
     epochs = 3 if args.quick else args.epochs
     device = torch.device(args.device) if args.device else torch.device("cuda" if torch.cuda.is_available() else "cpu")

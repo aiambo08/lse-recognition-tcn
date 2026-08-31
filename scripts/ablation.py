@@ -132,6 +132,8 @@ def main():
     parser.add_argument("--epochs", type=int, default=12, help="Épocas por configuración")
     parser.add_argument("--quick", action="store_true", help="Modo rápido (3 épocas)")
     parser.add_argument("--device", default=None, help="Dispositivo (cpu/cuda)")
+    parser.add_argument("--export-markdown", action="store_true", default=True, help="Exportar tabla en Markdown a docs/ablation_study.md")
+    parser.add_argument("--export-latex", action="store_true", default=True, help="Exportar tabla en LaTeX")
     args = parser.parse_args()
 
     epochs = 3 if args.quick else args.epochs
