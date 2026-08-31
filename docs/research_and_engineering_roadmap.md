@@ -76,11 +76,13 @@ O mediante **Leave-One-Signer-Out Cross-Validation (LOSO-CV)**: se realizan $K$ 
   - Dashboard interactivo multi-pestaña (Streamlit) con selección de modelo/backend, gráfico de barras de probabilidades calibradas en directo, métricas de latencia/FPS y síntesis de voz (TTS).
 
 ### Fase E: Redacción del Artículo Científico / Dossier Técnico
-- Estructura estándar IEEE / ACM:
-  1. *Abstract & Introduction*: Contexto social, accesibilidad y estado del arte en LSE.
-  2. *Related Work*: Análisis crítico de TCNs, GCNs y Vision Transformers en SLR.
-  3. *Methodology*: Normalización geométrica invariante + Arquitectura TCN causal dilatada.
-  4. *Experimental Setup*: Descripción del corpus multi-signante, protocolo LOSO-CV.
-  5. *Results & Discussion*: Tablas comparativas, matrices de confusión, estudio de ablación.
-  6. *Real-Time Deployment*: Análisis de latencia y sistema de votación/cooldown.
-  7. *Conclusions & Future Work*: Extensión a LSE continuo y modelos multimodales.
+- [x] **Manuscrito Científico IEEE Transactions (`paper/main.tex`, `paper/references.bib`)**:
+  - 1. *Abstract & Introduction*: Contexto social, accesibilidad y estado del arte en LSE.
+  - 2. *Related Work*: Análisis crítico de TCNs, GCNs y calibración probabilística.
+  - 3. *Methodology*: Normalización geométrica invariante, MS-TCN con Channel Attention, ST-GCN biomecánico y Temperature Scaling.
+  - 4. *Experimental Setup*: Corpus multi-signante DILSE, protocolo Signer-Dependent vs Leave-One-Signer-Out (LOSO-CV).
+  - 5. *Results & Discussion*: Tablas formales de benchmark, matriz de parámetros vs latencia vs generalización y estudio de ablación.
+  - 6. *Real-Time Deployment*: Exportación ONNX Runtime, servidor FastAPI WebSocket y demo Streamlit.
+  - 7. *Conclusions & Future Work*: Extensión a LSE continuo.
+- [x] **Dossier Técnico Ejecutivo (`docs/research_paper_dossier.md`)**:
+  - Resumen ejecutivo para difusión y lectura interactiva.
