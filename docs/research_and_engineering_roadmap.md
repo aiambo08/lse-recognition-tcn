@@ -38,22 +38,24 @@ O mediante **Leave-One-Signer-Out Cross-Validation (LOSO-CV)**: se realizan $K$ 
 ## 3. Desglose de Fases de Implementación (Roadmap)
 
 ### Fase A: Pipeline de Datos e Ingesta Automatizada
-- [ ] **Módulo de Ingesta (`src/lse_recognition/data/ingestion.py`)**:
-  - Descargador / Parser automático para DILSE o subconjuntos del Corpus LSE.
-  - Parser de anotaciones ELAN (`.eaf`) a CSV unificado.
-- [ ] **Extractor Multimodal Avanzado (`src/lse_recognition/data/extraction.py`)**:
-  - Extracción robusta de Manos (42 puntos) + Pose superior (hombros, codos, nariz: 6 puntos adicionales).
-  - Cálculo de features cinemáticas derivadas: velocidades $(\Delta x, \Delta y, \Delta z)$, aceleraciones y distancias euclidianas inter-digitales (distancia pulgar-índice, pulgar-medio).
-- [ ] **Splitter Cross-Signer (`src/lse_recognition/data/splits.py`)**:
-  - Generador automático de particiones estratificadas por signante (`signer_id`).
+- [x] **Módulo de Ingesta (`src/lse_recognition/data/ingestion.py`)**:
+  - Descargador / Parser automático para DILSE (`scripts/download_dilse.py`).
+  - Manifiesto unificado multi-signante y escáner de directorios.
+- [x] **Extractor Multimodal Avanzado (`src/lse_recognition/data/extraction.py`)**:
+  - Extracción robusta con soporte dual (MediaPipe Legacy + Tasks API).
+  - Cálculo de features cinemáticas derivadas (`src/lse_recognition/data/kinematics.py`): velocidades 3D $(\Delta x, \Delta y, \Delta z)$, aceleraciones y distancias euclidianas inter-digitales.
+- [x] **Splitter Cross-Signer (`src/lse_recognition/data/splits.py`)**:
+  - Particionado Signer-Independent y generador de folds LOSO-CV / Stratified Group Splits.
 
 ### Fase B: Arquitecturas Avanzadas y Benchmarking Comparativo
-- [ ] **Multi-Scale TCN (MS-TCN)**:
-  - Ramas paralelas con diferentes tamaños de kernel ($k=3, 5, 7$) para capturar micro-movimientos de dedos y macro-movimientos de brazos simultáneamente.
-- [ ] **Spatial-Temporal Graph Convolutional Network (ST-GCN)**:
-  - Modelar el esqueleto de la mano como un grafo biomecánico natural donde los huesos son aristas y los landmarks son nodos.
-- [ ] **Suite de Modelos Comparativos**:
-  - TCN (propuesto) vs ST-GCN vs BiLSTM con Atención vs Transformer (Self-Attention).
+- [x] **Multi-Scale TCN (MS-TCN)** (`src/lse_recognition/models/mstcn.py`):
+  - Ramas paralelas con múltiples kernels ($k=3, 5, 7$) + Squeeze-and-Excitation (Channel Attention) + Residual Shortcuts.
+- [x] **Spatial-Temporal Graph Convolutional Network (ST-GCN)** (`src/lse_recognition/models/stgcn.py`):
+  - Modelado biomecánico del grafo esquelético articular de manos (42 nodos, 21 conexiones anatómicas por mano).
+- [x] **BiLSTM con Temporal Attention** (`src/lse_recognition/models/attention_lstm.py`):
+  - Mecanismo de auto-atención temporal aditiva para ponderación explicable de frames clave.
+- [x] **Suite de Benchmarking Comparativo Automatizado** (`scripts/benchmark.py`):
+  - TCN vs MS-TCN vs BiLSTM vs Attention-BiLSTM vs ST-GCN con exportación en Markdown y LaTeX IEEE/ACM.
 
 ### Fase C: Rigor Experimental y Ablation Studies
 - [ ] **Estudios de Ablación (Ablation Studies)**:
