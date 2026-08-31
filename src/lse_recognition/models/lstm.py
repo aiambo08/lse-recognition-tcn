@@ -2,9 +2,7 @@
 lstm.py — LSTM alternativo para clasificación de LSE
 ====================================================
 
-Implementado como alternativa al TCN para comparación.
-El checkpoint guardado incluye la clave 'lstm_hidden_size' en el config,
-lo que permite detectar automáticamente el tipo de modelo.
+Implementado como alternativa al TCN para comparación y benchmarking.
 """
 
 from __future__ import annotations
@@ -18,68 +16,60 @@ import torch.nn as nn
 class LSTMSignClassifier(nn.Module):
     """
     Clasificador de secuencias con proyección inicial y capas LSTM.
-
-    Args:
-        config: Diccionario con al menos:
-            - input_features    (int)
-            - projection_dim    (int)
-            - lstm_hidden_size  (int)   ← distingue de TCN al cargar checkpoint
-            - lstm_num_layers   (int)
-            - lstm_dropout      (float)
-            - fc_hidden_dim     (int)
-            - fc_dropout        (float)
-            - num_classes       (int)
     """
 
     def __init__(self, config: Dict):
         super().__init__()
+        self.config = config
+
+        input_dim = config.get("input_features", 126)
+        proj_dim = config.get("projection_dim", 128)
+        hidden_size = config.get("lstm_hidden_size", config.get("lstm_hidden_dim", 128))
+        num_layers = config.get("lstm_num_layers", 2)
+        lstm_dropout = config.get("lstm_dropout", 0.3)
+        fc_hidden = config.get("fc_hidden_dim", 256)
+        fc_dropout = config.get("fc_dropout", 0.3)
+        num_classes = config.get("num_classes", 10)
 
         self.projection = nn.Sequential(
-            nn.Linear(config["input_features"], config["projection_dim"]),
+            nn.Linear(input_dim, proj_dim),
             nn.ReLU(),
             nn.Dropout(0.2),
         )
 
         self.lstm = nn.LSTM(
-            input_size=config["projection_dim"],
-            hidden_size=config["lstm_hidden_size"],
-            num_layers=config["lstm_num_layers"],
+            input_size=proj_dim,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
             batch_first=True,
-            dropout=(
-                config["lstm_dropout"] if config["lstm_num_layers"] > 1 else 0.0
-            ),
+            dropout=lstm_dropout if num_layers > 1 else 0.0,
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(config["lstm_hidden_size"], config["fc_hidden_dim"]),
+            nn.Linear(hidden_size, fc_hidden),
             nn.ReLU(),
-            nn.Dropout(config["fc_dropout"]),
-            nn.Linear(config["fc_hidden_dim"], config["num_classes"]),
+            nn.Dropout(fc_dropout),
+            nn.Linear(fc_hidden, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Args:
             x: (batch, seq_len, input_features)
-
         Returns:
             logits: (batch, num_classes)
         """
-        bsz, seq_len, feat_dim = x.shape
-
-        # Proyección
-        x = x.view(bsz * seq_len, feat_dim)
+        batch_size, seq_len, feat_dim = x.shape
+        x = x.view(batch_size * seq_len, feat_dim)
         x = self.projection(x)
-        x = x.view(bsz, seq_len, -1)
+        x = x.view(batch_size, seq_len, -1)
 
-        # LSTM — usa solo el último hidden state
-        _, (h_n, _) = self.lstm(x)
-        last_hidden = h_n[-1]
+        lstm_out, _ = self.lstm(x)  # (batch, seq_len, hidden_size)
+        last_step = lstm_out[:, -1, :]  # último frame
 
-        return self.classifier(last_hidden)
+        return self.classifier(last_step)
 
     def predict_proba(self, x: torch.Tensor) -> torch.Tensor:
-        """Predicción con probabilidades (softmax). Sin gradientes."""
         with torch.no_grad():
             logits = self.forward(x)
             return torch.softmax(logits, dim=1)

@@ -1,0 +1,6 @@
+Modelo,Parámetros,Tamaño (MB),Latencia CPU (ms),FPS,Acc. Signer-Dependent (%),F1 Macro (%),Acc. Signer-Independent (%),Gen. Gap (%)
+Standard TCN,677130,2.58,17.38,57.5,86.67,83.24,78.4,8.27
+Multi-Scale TCN (MS-TCN),697493,2.66,21.84,45.8,100.0,100.0,92.55,7.45
+BiLSTM,298250,1.14,20.54,48.7,40.0,29.59,27.16,12.84
+Attention-BiLSTM,743434,2.84,48.31,20.7,96.67,96.57,89.59,7.08
+ST-GCN (Hand Skeleton),7859382,29.98,33.54,29.8,93.33,92.03,80.74,12.59

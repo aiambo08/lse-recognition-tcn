@@ -125,16 +125,20 @@ class TCNSignClassifier(nn.Module):
         super().__init__()
 
         # 1. Proyección inicial
+        input_dim = config.get("input_features", 126)
+        proj_dim = config.get("projection_dim", 128)
         self.projection = nn.Sequential(
-            nn.Linear(config["input_features"], config["projection_dim"]),
+            nn.Linear(input_dim, proj_dim),
             nn.ReLU(),
             nn.Dropout(0.2),
         )
 
         # 2. Stack de bloques TCN con dilaciones exponenciales
         self.tcn_blocks = nn.ModuleList()
-        channels = config["tcn_channels"]
-        in_channels = config["projection_dim"]
+        channels = config.get("tcn_channels", [128, 128, 256, 256])
+        in_channels = proj_dim
+        kernel_size = config.get("kernel_size", 3)
+        tcn_dropout = config.get("tcn_dropout", 0.2)
 
         for i, out_channels in enumerate(channels):
             dilation = 2 ** i  # 1, 2, 4, 8, ...
@@ -142,9 +146,9 @@ class TCNSignClassifier(nn.Module):
                 TCNResidualBlock(
                     in_channels=in_channels,
                     out_channels=out_channels,
-                    kernel_size=config["kernel_size"],
+                    kernel_size=kernel_size,
                     dilation=dilation,
-                    dropout=config["tcn_dropout"],
+                    dropout=tcn_dropout,
                 )
             )
             in_channels = out_channels
@@ -153,11 +157,14 @@ class TCNSignClassifier(nn.Module):
         self.global_pool = nn.AdaptiveAvgPool1d(1)
 
         # 4. Clasificador
+        fc_hidden = config.get("fc_hidden_dim", 256)
+        fc_dropout = config.get("fc_dropout", 0.3)
+        num_classes = config.get("num_classes", 10)
         self.classifier = nn.Sequential(
-            nn.Linear(channels[-1], config["fc_hidden_dim"]),
+            nn.Linear(channels[-1], fc_hidden),
             nn.ReLU(),
-            nn.Dropout(config["fc_dropout"]),
-            nn.Linear(config["fc_hidden_dim"], config["num_classes"]),
+            nn.Dropout(fc_dropout),
+            nn.Linear(fc_hidden, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
