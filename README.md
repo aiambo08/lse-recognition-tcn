@@ -173,7 +173,9 @@ lse-recognition-tcn/
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Setup with `uv`
+
+This project uses **[`uv`](https://github.com/astral-sh/uv)** for ultra-fast, reproducible dependency resolution and virtual environment management.
 
 ### 1. Clone the Repository
 ```bash
@@ -181,60 +183,67 @@ git clone https://github.com/aiambo08/lse-recognition-tcn.git
 cd lse-recognition-tcn
 ```
 
-### 2. Environment Setup & Installation
-
-#### Option A: Using `uv` (Recommended — 10x Faster)
+### 2. Create Virtual Environment (Python 3.11 Recommended)
+`uv` automatically downloads and configures Python 3.11 in an isolated environment:
 ```bash
-# 1. Create virtual environment with Python 3.13 (or desired version)
-uv venv .venv --python 3.13
+uv venv .venv --python 3.11
+```
 
-# 2. Activate virtual environment
-# Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Linux / macOS:
-source .venv/bin/activate
+### 3. Activate Virtual Environment
+- **Windows (PowerShell):**
+  ```powershell
+  .venv\Scripts\Activate.ps1
+  ```
+- **Windows (CMD):**
+  ```cmd
+  .venv\Scripts\activate.bat
+  ```
+- **Linux / macOS:**
+  ```bash
+  source .venv/bin/activate
+  ```
 
-# 3. Install dependencies and package in editable mode
+### 4. Install Dependencies & Package
+```bash
+# Install core dependencies
 uv pip install -r requirements.txt
+
+# Install lse_recognition package in editable mode
 uv pip install -e .
-```
 
-*Tip: With `uv`, you can also run any command directly without activating:*
-```bash
-uv run pytest -v
-uv run python scripts/benchmark.py --model mstcn
-```
-
-#### Option B: Standard Python `venv`
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-pip install -e .
+# (Optional) Install development and testing dependencies
+uv pip install -r requirements-dev.txt
 ```
 
 ---
 
 ## 💻 Quick Start & CLI Tools
 
-### 1. Run Complete Benchmark Suite
+You can run any script with your activated environment, or directly using `uv run`:
+
+### 1. Run Complete Multi-Model Benchmark Suite
 ```bash
-python scripts/benchmark.py --model all --epochs 50 --export-markdown
+uv run python scripts/benchmark.py --model all --epochs 50 --export-markdown
 ```
 
 ### 2. Run Systematic Ablation Study
 ```bash
-python scripts/ablation.py --epochs 40 --export-markdown
+uv run python scripts/ablation.py --epochs 40 --export-markdown
 ```
 
 ### 3. Export Model to ONNX Runtime
 ```bash
-python scripts/export_model.py --model mstcn --format onnx --output models/lse_model.onnx
+uv run python scripts/export_model.py --model mstcn --format onnx --output models/lse_model.onnx
 ```
 
 ### 4. Train a Specific Architecture
 ```bash
-python scripts/train.py --epochs 80 --lr 0.0005 --seed 42 --evaluate
+uv run python scripts/train.py --epochs 80 --lr 0.0005 --seed 42 --evaluate
+```
+
+### 5. Run Live Inference with Local Webcam & TTS
+```bash
+uv run python scripts/realtime.py
 ```
 
 ---
@@ -243,7 +252,7 @@ python scripts/train.py --epochs 80 --lr 0.0005 --seed 42 --evaluate
 
 ### 1. Launch FastAPI Real-Time Server
 ```bash
-uvicorn lse_recognition.server.app:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn lse_recognition.server.app:app --host 0.0.0.0 --port 8000 --reload
 ```
 - **Interactive OpenAPI Documentation**: `http://localhost:8000/docs`
 - **REST Endpoint**: `POST /predict/sequence` (Batched $T \times 126$ sequences)
@@ -251,7 +260,7 @@ uvicorn lse_recognition.server.app:app --host 0.0.0.0 --port 8000 --reload
 
 ### 2. Launch Streamlit Interactive Research Demo
 ```bash
-streamlit run src/lse_recognition/demo/app.py
+uv run streamlit run src/lse_recognition/demo/app.py
 ```
 Provides:
 - Architecture selector (MS-TCN, ST-GCN, Attention-BiLSTM, TCN) and runtime backend (PyTorch vs ONNX Runtime).
@@ -284,7 +293,7 @@ If you use this work, codebase, or findings in your research, please cite:
 The repository is covered by **67 unit and integration tests** in `pytest`:
 
 ```bash
-pytest -v
+uv run pytest -v
 ```
 
 ```
