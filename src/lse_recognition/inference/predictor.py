@@ -56,15 +56,44 @@ class RealtimeLandmarkExtractor:
                 "MediaPipe no está instalado en este entorno Python. "
                 "Para inferencia en tiempo real instala: pip install mediapipe"
             )
-        mp_hands = mp.solutions.hands
-        self.hands = mp_hands.Hands(
-            static_image_mode=False,
-            max_num_hands=2,
-            min_detection_confidence=config.get("mediapipe_min_detection_confidence", 0.7),
-            min_tracking_confidence=config.get("mediapipe_min_tracking_confidence", 0.5),
-        )
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_hands = mp_hands
+        min_det = config.get("mediapipe_min_detection_confidence", 0.7)
+        min_track = config.get("mediapipe_min_tracking_confidence", 0.5)
+
+        if hasattr(mp, "solutions") and hasattr(mp.solutions, "hands"):
+            self.mode = "solutions"
+            self.mp_hands = mp.solutions.hands
+            self.hands = self.mp_hands.Hands(
+                static_image_mode=False,
+                max_num_hands=2,
+                min_detection_confidence=min_det,
+                min_tracking_confidence=min_track,
+            )
+            self.mp_drawing = mp.solutions.drawing_utils
+        elif hasattr(mp, "tasks") and hasattr(mp.tasks, "vision"):
+            self.mode = "tasks"
+            import urllib.request
+            model_dir = Path("models")
+            model_dir.mkdir(parents=True, exist_ok=True)
+            model_path = model_dir / "hand_landmarker.task"
+            if not model_path.exists():
+                url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+                urllib.request.urlretrieve(url, str(model_path))
+
+            BaseOptions = mp.tasks.BaseOptions
+            HandLandmarker = mp.tasks.vision.HandLandmarker
+            HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+            VisionRunningMode = mp.tasks.vision.RunningMode
+
+            options = HandLandmarkerOptions(
+                base_options=BaseOptions(model_asset_path=str(model_path)),
+                running_mode=VisionRunningMode.IMAGE,
+                num_hands=2,
+                min_hand_detection_confidence=min_det,
+                min_tracking_confidence=min_track,
+            )
+            self.hands = HandLandmarker.create_from_options(options)
+        else:
+            raise RuntimeError("No se pudo inicializar la API de MediaPipe.")
 
     def extract_hands_landmarks(
         self, frame: np.ndarray
@@ -81,40 +110,64 @@ class RealtimeLandmarkExtractor:
             - annotated_frame: frame con anotaciones dibujadas
             - hands_detected:  True si al menos una mano fue detectada
         """
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.hands.process(frame_rgb)
-
         landmarks = np.zeros((42, 3), dtype=np.float32)
         annotated_frame = frame.copy()
         hands_detected = False
+        h, w, _ = frame.shape
 
-        if results.multi_hand_landmarks and results.multi_handedness:
-            for hand_lm, hand_info in zip(
-                results.multi_hand_landmarks, results.multi_handedness
-            ):
-                # MediaPipe devuelve 'Left'/'Right' desde la perspectiva del sujeto
-                # (espejo), por eso se invierten:
-                label = hand_info.classification[0].label
-                if label == "Left":
-                    offset = 0   # mano derecha real → slot izquierdo
-                else:
-                    offset = 21  # mano izquierda real → slot derecho
+        if self.mode == "solutions":
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = self.hands.process(frame_rgb)
+            if results.multi_hand_landmarks and results.multi_handedness:
+                for hand_lm, hand_info in zip(
+                    results.multi_hand_landmarks, results.multi_handedness
+                ):
+                    label = hand_info.classification[0].label
+                    offset = 0 if label == "Left" else 21
+                    for idx, lm in enumerate(hand_lm.landmark):
+                        landmarks[offset + idx] = [lm.x, lm.y, lm.z]
+                    if hasattr(self, "mp_drawing") and self.mp_drawing:
+                        self.mp_drawing.draw_landmarks(
+                            annotated_frame,
+                            hand_lm,
+                            self.mp_hands.HAND_CONNECTIONS,
+                        )
+                    hands_detected = True
 
-                for idx, lm in enumerate(hand_lm.landmark):
-                    landmarks[offset + idx] = [lm.x, lm.y, lm.z]
+        elif self.mode == "tasks":
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+            results = self.hands.detect(mp_image)
 
-                self.mp_drawing.draw_landmarks(
-                    annotated_frame,
-                    hand_lm,
-                    self.mp_hands.HAND_CONNECTIONS,
-                )
-                hands_detected = True
+            if results.hand_landmarks and results.handedness:
+                for hand_lm_list, hand_info in zip(results.hand_landmarks, results.handedness):
+                    category = hand_info[0].category_name if hasattr(hand_info[0], "category_name") else hand_info[0].display_name
+                    offset = 0 if category == "Left" else 21
+                    for idx, lm in enumerate(hand_lm_list):
+                        landmarks[offset + idx] = [lm.x, lm.y, lm.z]
+                        px, py = int(lm.x * w), int(lm.y * h)
+                        cv2.circle(annotated_frame, (px, py), 4, (0, 255, 0), -1)
+
+                    hand_connections = [
+                        (0, 1), (1, 2), (2, 3), (3, 4),
+                        (0, 5), (5, 6), (6, 7), (7, 8),
+                        (5, 9), (9, 10), (10, 11), (11, 12),
+                        (9, 13), (13, 14), (14, 15), (15, 16),
+                        (13, 17), (17, 18), (18, 19), (19, 20), (0, 17),
+                    ]
+                    for p1_idx, p2_idx in hand_connections:
+                        if p1_idx < len(hand_lm_list) and p2_idx < len(hand_lm_list):
+                            pt1 = (int(hand_lm_list[p1_idx].x * w), int(hand_lm_list[p1_idx].y * h))
+                            pt2 = (int(hand_lm_list[p2_idx].x * w), int(hand_lm_list[p2_idx].y * h))
+                            cv2.line(annotated_frame, pt1, pt2, (0, 200, 255), 2)
+                    hands_detected = True
 
         return landmarks, annotated_frame, hands_detected
 
     def release(self) -> None:
         """Libera recursos de MediaPipe."""
-        self.hands.close()
+        if hasattr(self.hands, "close"):
+            self.hands.close()
 
 
 # ------------------------------------------------------------------ #
