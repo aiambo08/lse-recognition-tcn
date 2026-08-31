@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lse-recognition"
+version = "1.0.0"
+description = "Sistema de reconocimiento de Lengua de Signos Española (LSE) con TCN"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Universidad Politécnica de Madrid" }
+]
+keywords = ["sign-language", "LSE", "TCN", "deep-learning", "mediapipe"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "torchaudio>=2.0.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.3.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "tqdm>=4.65.0",
+    "pyyaml>=6.0",
+    "opencv-python>=4.8.0",
+    "mediapipe>=0.10.0",
+]
+
+[project.optional-dependencies]
+tts = [
+    "pyttsx3>=2.90",
+]
+tts-online = [
+    "gtts>=2.3.0",
+    "playsound==1.2.2",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "jupyter>=1.0.0",
+    "ipykernel>=6.25.0",
+]
+
+[project.scripts]
+lse-train = "lse_recognition.scripts.train:main"
+lse-evaluate = "lse_recognition.scripts.evaluate:main"
+lse-realtime = "lse_recognition.scripts.realtime:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

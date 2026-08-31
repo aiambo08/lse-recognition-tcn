@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+.installed.cfg
+lib/
+lib64/
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+__MACOSX/
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Data & models (generados localmente, no versionar)
+# Comenta estas líneas si quieres versionar datos de ejemplo
+# data/raw_videos/
+# data/landmarks/
+# data/landmarks_hands_only/
+# models/*.pth
+
+# Logs
+*.log
+logs/
+
+# Distribución
+*.tar.gz
+*.whl

@@ -1,0 +1,54 @@
+# Configuración completa del sistema LSE-TCN
+# Edita este archivo para ajustar hiperparámetros sin modificar el código
+
+model:
+  # Arquitectura
+  seq_length: 60           # Longitud de secuencia en frames
+  input_features: 126      # 42 landmarks × 3 coords (hands-only)
+  num_classes: 10          # Número de clases (palabras)
+  projection_dim: 128      # Dimensión de proyección inicial
+  tcn_channels:            # Canales por bloque TCN (dilaciones exponenciales)
+    - 128
+    - 128
+    - 128
+    - 256
+  kernel_size: 3           # Tamaño del kernel de convolución dilatada
+  tcn_dropout: 0.3         # Dropout en bloques TCN
+  fc_hidden_dim: 128       # Capa oculta del clasificador
+  fc_dropout: 0.4          # Dropout en el clasificador
+
+training:
+  batch_size: 32           # Tamaño de batch
+  learning_rate: 0.001     # Learning rate inicial (Adam)
+  weight_decay: 0.0001     # Regularización L2
+  epochs: 120              # Máximo de epochs
+  early_stopping_patience: 15   # Paciencia para early stopping (F1 val)
+  lr_scheduler_patience: 6      # Paciencia para ReduceLROnPlateau
+  lr_scheduler_factor: 0.5      # Factor de reducción del LR
+  seed: 42                 # Semilla aleatoria (reproducibilidad)
+  use_hands_only: true     # Usar solo landmarks de manos (42 pts vs 75)
+  normalize: true          # Aplicar normalización geométrica
+
+data:
+  train_csv: data/metadata/train_split_augmented.csv
+  val_csv: data/metadata/val_split.csv
+  test_csv: data/metadata/test_split.csv
+  model_dir: models        # Directorio para guardar checkpoints
+
+inference:
+  camera_index: 0          # 0=webcam principal, 1=cámara externa
+  frame_width: 640
+  frame_height: 480
+  buffer_size: 90          # Frames en buffer circular (3s a 30 FPS)
+  min_frames_to_predict: 30    # Mínimo de frames para intentar predicción
+  confidence_threshold_high: 0.75   # Umbral de confianza para aceptar predicción
+  stabilization_votes: 3   # Predicciones consecutivas requeridas para confirmar
+  cooldown_duration: 3.0   # Segundos entre detecciones de la misma palabra
+  prediction_interval: 5   # Predecir cada N frames (optimización de CPU)
+  enable_tts: true         # Activar síntesis de voz
+  tts_language: es         # Código de idioma para TTS (es=español)
+  tts_rate: 150            # Velocidad de lectura TTS (palabras/minuto)
+  show_fps: true           # Mostrar FPS en pantalla
+  show_buffer_status: true # Mostrar estado del buffer en pantalla
+  mediapipe_min_detection_confidence: 0.7
+  mediapipe_min_tracking_confidence: 0.5
