@@ -311,17 +311,27 @@ class LSERealtimeSystem:
         # Cargar modelo
         print("Cargando modelo...")
         checkpoint = torch.load(model_path, map_location=device)
-        self.saved_config = checkpoint["config"]
+        self.saved_config = checkpoint.get("config", inference_config)
+        state_dict = checkpoint.get("model_state_dict", checkpoint)
 
-        if "tcn_channels" in self.saved_config:
-            model_class = TCNSignClassifier
-            print("   Tipo: TCN")
+        # Detectar tipo de arquitectura
+        if "model_type" in self.saved_config:
+            m_type = self.saved_config["model_type"]
+        elif any("node_proj" in k for k in state_dict.keys()):
+            m_type = "stgcn"
+        elif any("ms_blocks" in k or "branches" in k for k in state_dict.keys()):
+            m_type = "mstcn"
+        elif any("attention" in k for k in state_dict.keys()):
+            m_type = "attention_lstm"
+        elif any("lstm" in k for k in state_dict.keys()):
+            m_type = "lstm"
         else:
-            model_class = LSTMSignClassifier
-            print("   Tipo: LSTM")
+            m_type = "tcn"
 
-        self.model = model_class(self.saved_config).to(device)
-        self.model.load_state_dict(checkpoint["model_state_dict"])
+        from lse_recognition.models import create_model
+        print(f"   Tipo detectado: {m_type.upper()}")
+        self.model = create_model(self.saved_config, model_type=m_type, device=device)
+        self.model.load_state_dict(state_dict)
         self.model.eval()
         print(f"   ✅ Modelo cargado (Val F1: {checkpoint.get('val_f1', 0):.4f})")
 

@@ -68,19 +68,32 @@ def evaluate_model(
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     checkpoint = torch.load(model_path, map_location=device)
-    config = checkpoint["config"]
+    config = checkpoint.get("config", {})
+    state_dict = checkpoint.get("model_state_dict", checkpoint)
 
-    if model_class is None:
-        model_class = _detect_model_class(config)
+    # Detectar tipo de arquitectura
+    if "model_type" in config:
+        m_type = config["model_type"]
+    elif any("node_proj" in k for k in state_dict.keys()):
+        m_type = "stgcn"
+    elif any("ms_blocks" in k or "branches" in k for k in state_dict.keys()):
+        m_type = "mstcn"
+    elif any("attention" in k for k in state_dict.keys()):
+        m_type = "attention_lstm"
+    elif any("lstm" in k for k in state_dict.keys()):
+        m_type = "lstm"
+    else:
+        m_type = "tcn"
 
-    model = model_class(config).to(device)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    from lse_recognition.models import create_model
+    model = create_model(config, model_type=m_type, device=device)
+    model.load_state_dict(state_dict)
     model.eval()
 
     print(f"\n{'='*60}")
     print("EVALUACIÓN EN TEST SET")
     print(f"{'='*60}")
-    print(f"Modelo:           {model_class.__name__}")
+    print(f"Modelo:           {model.__class__.__name__} ({m_type.upper()})")
     print(f"Checkpoint:       {model_path}")
     print(f"Epoch guardado:   {checkpoint.get('epoch', 'N/A')}")
     val_f1 = checkpoint.get("val_f1", 0.0)

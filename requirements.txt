@@ -14,5 +14,19 @@ pyyaml>=6.0
 opencv-python>=4.8.0
 mediapipe>=0.10.0
 
-# TTS (optional - comentar si no se necesita)
+# Deployment, ONNX & Edge Inversion
+onnx>=1.15.0
+onnxruntime>=1.16.0
+onnxscript>=0.1.0
+
+# Serving & Real-Time APIs
+fastapi>=0.110.0
+uvicorn>=0.28.0
+websockets>=12.0
+
+# Research Dashboard
+streamlit>=1.30.0
+
+# TTS (optional)
 pyttsx3>=2.90
+
