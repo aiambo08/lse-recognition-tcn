@@ -58,14 +58,14 @@ O mediante **Leave-One-Signer-Out Cross-Validation (LOSO-CV)**: se realizan $K$ 
   - TCN vs MS-TCN vs BiLSTM vs Attention-BiLSTM vs ST-GCN con exportación en Markdown y LaTeX IEEE/ACM.
 
 ### Fase C: Rigor Experimental y Ablation Studies
-- [ ] **Estudios de Ablación (Ablation Studies)**:
+- [x] **Estudios de Ablación (Ablation Studies)** (`scripts/ablation.py`, `docs/ablation_study.md`):
   - Impacto de la normalización geométrica (con vs sin normalización).
-  - Impacto del campo receptivo (dilaciones $[1,2,4,8]$ vs $[1,2,4,8,16]$).
-  - Impacto de features (solo manos vs manos + pose + cinemática).
-- [ ] **Calibración de Confianza (Confidence Calibration)**:
-  - Evaluación de *Expected Calibration Error (ECE)* y Temperature Scaling para evitar sobreconfianza en predicciones dudosas.
-- [ ] **Análisis de Eficiencia Computacional**:
-  - Medición formal de FLOPs, número de parámetros, latencia (ms) en CPU y GPU, y consumo de memoria.
+  - Impacto del campo receptivo (dilaciones $[1,2]$, $[1,2,4]$, $[1,2,4,8]$, $[1,2,4,8,16]$).
+  - Impacto de multi-escala temporal ($k=3$ vs $k \in \{3,5\}$ vs $k \in \{3,5,7\}$).
+- [x] **Calibración de Confianza (Confidence Calibration)** (`src/lse_recognition/evaluation/calibration.py`):
+  - Expected Calibration Error (ECE), Maximum Calibration Error (MCE), Brier Score y Temperature Scaling ($T^*$).
+- [x] **Análisis de Eficiencia Computacional**:
+  - Medición formal de número de parámetros, latencia (ms) en CPU y GPU, throughput (FPS) y consumo de memoria.
 
 ### Fase D: Despliegue de Producción y APIs
 - [ ] **Exportación Optimizada**:
